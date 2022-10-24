@@ -1,7 +1,7 @@
 function initialConfiguration(simConfig, objConfig, linkConfig, initialValues)
 
-global r ptt0 ptm0 lt lm pc10 pc20
-global f1 f2 nx10 ny10 nz10 nx20 ny20 nz20
+global r ptf10 ptf20 ptf30 l1 l2 l3 pc10 pc20 pc30
+global f1 f2 f3 nx10 nx20 nx30 ny10 ny20 ny30 nz10 nz20 nz30
 
 figure('Name','Initial Configuration','NumberTitle','off')
 
@@ -17,116 +17,111 @@ a  = [ 0 ; 0 ; 1];
 % Create cube, trapezium or sphere
 createObject(simConfig, objConfig, n, o, a, initialValues.p0)
 
-% Create First Fingers
-T11 = linkConfig.links1(1).A(initialValues.qt0(1));
-T21 = linkConfig.links1(2).A(initialValues.qt0(2));
-T31 = linkConfig.links1(3).A(initialValues.qt0(3));
-T41 = linkConfig.links1(4).A(initialValues.qt0(4));
+%% Finger positions
+[Rtf1, Rf12, pf12, Rf13, pf13, Rf14, pf14] = fingerPosition(f1, linkConfig.links1, initialValues.qf10);
+[Rtf2, Rf22, pf22, Rf23, pf23, Rf24, pf24] = fingerPosition(f2, linkConfig.links2, initialValues.qf20);
+[Rtf3, Rf32, pf32, Rf33, pf33, Rf34, pf34] = fingerPosition(f3, linkConfig.links3, initialValues.qf30);
 
-T12f = T11*T21;
-% Rotation and position of the first finger first cylinder
-Rf2 = T12f(1:3, 1:3);
-pf2 = T12f(1:3, 4);
-
-T13t = T12f*T31;
-% Rotation and position of the first finger second cylinder
-Rf3 = T13t(1:3, 1:3);
-pf3 = T13t(1:3, 4);
-
-T14t = T13t*T41;
-% Rotation and position of the first finger third cylinder
-Rf4 = T14t(1:3,1:3);
-pf4 = T14t(1:3,4);
-
-T_init4t = f1.fkine(initialValues.qt0');
-Rtt = T_init4t(1:3,1:3);
-
-% Create Second Fingers
-T12 = linkConfig.links2(1).A(initialValues.qm0(1));
-T22 = linkConfig.links2(2).A(initialValues.qm0(2));
-T32 = linkConfig.links2(3).A(initialValues.qm0(3));
-T42 = linkConfig.links2(4).A(initialValues.qm0(4));
-
-T12s = f2.base*T12*T22;
-% Rotation and position of the first finger first cylinder
-Rs2 = T12s(1:3,1:3);
-ps2 = T12s(1:3,4); %+ pbase;
-
-T13s = T12s*T32;
-% Rotation and position of the first finger second cylinder
-Rs3 = T13s(1:3,1:3);
-ps3 = T13s(1:3,4); %+ pbase;
-
-T14s = T13s*T42;
-% Rotation and position of the first finger third cylinder
-Rs4 = T14s(1:3,1:3);
-ps4 = T14s(1:3,4); %+ pbase;
-
-T_init4s = f2.fkine(initialValues.qm0');
-Rtm = T_init4s(1:3,1:3);
+%% Display finger joints 
 
 % Frist Finger Joints 
 R = 0.015/2;
-tipt = ptt0 + Rtt*[r - R ; 0 ; 0];
+tipf1 = ptf10 + Rtf1*[r - R ; 0 ; 0];
 [xs,ys,zs] = sphere(50);
 hSurface = surf(R.*xs, R.*ys, R.*zs);
 set(hSurface,'FaceColor',color,'EdgeAlpha',0.1);
-createJoints(R, xs, ys, zs, pf2, pf3, pf4, tipt, color, simConfig)
+createJoints(R, xs, ys, zs, pf12, pf13, pf14, tipf1, color, simConfig)
 
 % Second Finger Joints
 R = 0.015/2;
-tipm = ptm0 + Rtm*[r - R ; 0 ; 0];
+tipf2 = ptf20 + Rtf2 * [r - R ; 0 ; 0];
 [xs,ys,zs] = sphere(50);
-hSurface = surf(R.*xs, R.*ys + pf2(2), R.*zs);
+hSurface = surf(R.*xs, R.*ys + pf12(2), R.*zs);
 set(hSurface,'FaceColor',color,'EdgeAlpha',0.1);
-createJoints(R, xs, ys, zs, ps2, ps3, ps4, tipm, color, simConfig)
+createJoints(R, xs, ys, zs, pf22, pf23, pf24, tipf2, color, simConfig)
+
+% Third Finger Joints
+R = 0.015/2;
+tipf3 = ptf30 + Rtf3 * [r - R ; 0 ; 0];
+[xs,ys,zs] = sphere(50);
+hSurface = surf(R.*xs + pf32(1), R.*ys + pf32(2), R.*zs);
+set(hSurface,'FaceColor', color, 'EdgeAlpha', 0.1);
+createJoints(R, xs, ys, zs, pf32, pf33, pf34, tipf3, color, simConfig)
+
+%% Display finger links 
 
 % First Finger Links
-[xt2, yt2, zt2] = cylinder(R);
-zt2 = lt(1).*zt2;
-[xnewt2, ynewt2, znewt2] = cylinderPosition(xt2, yt2, zt2, Rf2);
+[xf12, yf12, zf12] = cylinder(R);
+zf12 = l1(1).*zf12;
+[xnewt2, ynewt2, znewt2] = cylinderPosition(xf12, yf12, zf12, Rf12);
 hSurface = surf(xnewt2, ynewt2, znewt2);
 set(hSurface,'FaceColor', color, 'EdgeAlpha', 0.1);
 
-[xt3, yt3, zt3] = cylinder(R);
-zt3 = lt(2).*zt3;
-[xnewt3, ynewt3, znewt3] = cylinderPosition(xt3, yt3, zt3, Rf3);
-hSurface = surf(xnewt3 + pf3(1), ynewt3 + pf3(2), znewt3 + pf3(3));
+[xf13, yf13, zf13] = cylinder(R);
+zf13 = l1(2).*zf13;
+[xnewt3, ynewt3, znewt3] = cylinderPosition(xf13, yf13, zf13, Rf13);
+hSurface = surf(xnewt3 + pf13(1), ynewt3 + pf13(2), znewt3 + pf13(3));
 set(hSurface,'FaceColor',color,'EdgeAlpha',0.1);
 
-[xt4, yt4, zt4] = cylinder(R);
-zt4 = (lt(3) + r / 2).*zt4;
-[xnewt4, ynewt4, znewt4] = cylinderPosition(xt4, yt4, zt4, Rf4);
-hSurface = surf(xnewt4 + pf4(1), ynewt4 + pf4(2), znewt4 + pf4(3));
+[xf14, yf14, zf14] = cylinder(R);
+zf14 = (l1(3) + r / 2).*zf14;
+[xnewt4, ynewt4, znewt4] = cylinderPosition(xf14, yf14, zf14, Rf14);
+hSurface = surf(xnewt4 + pf14(1), ynewt4 + pf14(2), znewt4 + pf14(3));
 set(hSurface, 'FaceColor', color, 'EdgeAlpha', 0.1, 'FaceAlpha', simConfig.alpha);
 
 % Second Finger Links
-[xm2, ym2, zm2] = cylinder(R);
-zm2 = lm(1).*zm2;
-[xnewm2, ynewm2, znewm2] = cylinderPosition(xm2, ym2, zm2, Rs2);
-hSurface = surf(xnewm2, ynewm2 + ps2(2),znewm2);
+[xf22, yf22, zf22] = cylinder(R);
+zf22 = l2(1).*zf22;
+[xnewm2, ynewm2, znewm2] = cylinderPosition(xf22, yf22, zf22, Rf22);
+hSurface = surf(xnewm2, ynewm2 + pf22(2),znewm2);
 set(hSurface,'FaceColor',color,'EdgeAlpha',0.1);
 
-[xm3, ym3, zm3] = cylinder(R);
-zm3 = lm(2).*zm3;
-[xnewm3, ynewm3, znewm3] = cylinderPosition(xm3, ym3, zm3, Rs3);
-hSurface = surf(xnewm3 + ps3(1), ynewm3 + ps3(2), znewm3 + ps3(3));
+[xf23, yf23, zf23] = cylinder(R);
+zf23 = l2(2).*zf23;
+[xnewm3, ynewm3, znewm3] = cylinderPosition(xf23, yf23, zf23, Rf23);
+hSurface = surf(xnewm3 + pf23(1), ynewm3 + pf23(2), znewm3 + pf23(3));
 set(hSurface, 'FaceColor', color, 'EdgeAlpha', 0.1);
 
-[xm4, ym4, zm4] = cylinder(R);
-zm4 = (lm(3) + r / 2).*zm4;
-[xnewm4, ynewm4, znewm4] = cylinderPosition(xm4, ym4, zm4, Rs4);
-hSurface = surf(xnewm4 + ps4(1), ynewm4 + ps4(2), znewm4 + ps4(3));
+[xf24, yf24, zf24] = cylinder(R);
+zf24 = (l2(3) + r / 2).*zf24;
+[xnewm4, ynewm4, znewm4] = cylinderPosition(xf24, yf24, zf24, Rf24);
+hSurface = surf(xnewm4 + pf24(1), ynewm4 + pf24(2), znewm4 + pf24(3));
 set(hSurface, 'FaceColor', color, 'EdgeAlpha',0.1, 'FaceAlpha', simConfig.alpha);
 
+% Third Finger Links
+[xf32, yf32, zf32] = cylinder(R);
+zf32 = l3(1).*zf32;
+[xnewm2, ynewm2, znewm2] = cylinderPosition(xf32, yf32, zf32, Rf32);
+hSurface = surf(xnewm2 + pf32(1), ynewm2 + pf32(2), znewm2);
+set(hSurface,'FaceColor',color,'EdgeAlpha',0.1);
+
+[xf33, yf33, zf33] = cylinder(R);
+zf33 = l3(2).*zf33;
+[xnewm3, ynewm3, znewm3] = cylinderPosition(xf33, yf33, zf33, Rf33);
+hSurface = surf(xnewm3 + pf33(1), ynewm3 + pf33(2), znewm3 + pf33(3));
+set(hSurface, 'FaceColor', color, 'EdgeAlpha', 0.1);
+
+[xf34, yf34, zf34] = cylinder(R);
+zf34 = (l3(3) + r / 2).*zf34;
+[xnewm4, ynewm4, znewm4] = cylinderPosition(xf34, yf34, zf34, Rf34);
+hSurface = surf(xnewm4 + pf34(1), ynewm4 + pf34(2), znewm4 + pf34(3));
+set(hSurface, 'FaceColor', color, 'EdgeAlpha',0.1, 'FaceAlpha', simConfig.alpha);
+
+%% Display finger fingertips 
+
 % First Finger Fingertip
-[xnewt, ynewt, znewt] = fingertipPosition(Rtt, -pi/2);
-hSurface = surf(r.*xnewt + ptt0(1), r.*ynewt + ptt0(2), r.*znewt + ptt0(3));  %# Plot the surface
+[xnewf1, ynewf1, znewf1] = fingertipPosition(Rtf1, -pi/2);
+hSurface = surf(r.*xnewf1 + ptf10(1), r.*ynewf1 + ptf10(2), r.*znewf1 + ptf10(3));  %# Plot the surface
 set(hSurface,'FaceColor',colortip,'EdgeAlpha',0,'FaceAlpha', simConfig.alpha);
 
 % Second Finger Fingertip
-[xnewm, ynewm, znewm] = fingertipPosition(Rtm, pi/2);
-hSurface = surf(r.*xnewm + ptm0(1), r.*ynewm + ptm0(2), r.*znewm + ptm0(3));  %# Plot the surface
+[xnewf2, ynewf2, znewf2] = fingertipPosition(Rtf2, pi/2);
+hSurface = surf(r.*xnewf2 + ptf20(1), r.*ynewf2 + ptf20(2), r.*znewf2 + ptf20(3));  %# Plot the surface
+set(hSurface,'FaceColor',colortip,'EdgeAlpha',0,'FaceAlpha', simConfig.alpha);
+
+% Third Finger Fingertip
+[xnewf3, ynewf3, znewf3] = fingertipPosition(Rtf3, pi/2);
+hSurface = surf(r.*xnewf3 + ptf30(1), r.*ynewf3 + ptf30(2), r.*znewf3 + ptf30(3));  %# Plot the surface
 set(hSurface,'FaceColor',colortip,'EdgeAlpha',0,'FaceAlpha', simConfig.alpha);
 
 if simConfig.test == 1
@@ -135,14 +130,19 @@ if simConfig.test == 1
     quiver3(pc10(1),pc10(2),pc10(3),0.02*nx10(1),0.02*nx10(2),0.02*nx10(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
     quiver3(pc10(1),pc10(2),pc10(3),0.02*ny10(1),0.02*ny10(2),0.02*ny10(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
     quiver3(pc10(1),pc10(2),pc10(3),0.02*nz10(1),0.02*nz10(2),0.02*nz10(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
+    
     quiver3(pc20(1),pc20(2),pc20(3),0.02*nx20(1),0.02*nx20(2),0.02*nx20(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
     quiver3(pc20(1),pc20(2),pc20(3),0.02*ny20(1),0.02*ny20(2),0.02*ny20(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
     quiver3(pc20(1),pc20(2),pc20(3),0.02*nz20(1),0.02*nz20(2),0.02*nz20(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
     
+    quiver3(pc30(1),pc30(2),pc30(3),0.02*nx30(1),0.02*nx30(2),0.02*nx30(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
+    quiver3(pc30(1),pc30(2),pc30(3),0.02*ny30(1),0.02*ny30(2),0.02*ny30(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
+    quiver3(pc30(1),pc30(2),pc30(3),0.02*nz30(1),0.02*nz30(2),0.02*nz30(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
+    
     % t1t2 & c1c2
-    xtt = [ ptt0(1); ptm0(1) ] ;
-    ytt = [ ptt0(2); ptm0(2) ] ;
-    ztt = [ ptt0(3); ptm0(3) ] ;
+    xtt = [ ptf10(1); ptf20(1) ] ;
+    ytt = [ ptf10(2); ptf20(2) ] ;
+    ztt = [ ptf10(3); ptf20(3) ] ;
     xcc = [ pc10(1); pc20(1) ] ;
     ycc = [ pc10(2); pc20(2) ] ;
     zcc = [ pc10(3); pc20(3) ] ;

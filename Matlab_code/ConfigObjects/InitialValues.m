@@ -1,7 +1,8 @@
 classdef InitialValues
     properties
-        qt0
-        qm0
+        qf10
+        qf20
+        qf30
         p0
         n0
         o0

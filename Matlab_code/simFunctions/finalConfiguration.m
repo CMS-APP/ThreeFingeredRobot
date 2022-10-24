@@ -1,6 +1,6 @@
 function finalConfiguration(simConfig, objConfig, linkConfig)
 
-global x_out ptt ptm r lt lm pct pcm
+global x_out ptt ptm r l1 l2 pct pcm
 global f1 f2 Nc1 Nx1 Nz1 Nc2 Nx2 Nz2 K Eul1 Eul2
 
 figure('Name', 'Final Configuration', 'NumberTitle', 'off')
@@ -105,38 +105,38 @@ set(hSurface, 'FaceColor', color, 'EdgeAlpha', 0.1, 'FaceAlpha', simConfig.alpha
 
 % First Finger Links
 [xt2, yt2, zt2] = cylinder(R);
-zt2 = lt(1).*zt2;
+zt2 = l1(1).*zt2;
 [xnewt2, ynewt2, znewt2] = cylinderPosition(xt2, yt2, zt2, Rt2);
 hSurface = surf(xnewt2, ynewt2, znewt2);
 set(hSurface,'FaceColor', color, 'EdgeAlpha', 0.1);
 
 [xt3, yt3, zt3] = cylinder(R);
-zt3 = lt(2).*zt3;
+zt3 = l1(2).*zt3;
 [xnewt3, ynewt3, znewt3] = cylinderPosition(xt3, yt3, zt3, Rt3);
 hSurface = surf(xnewt3 + pt3(1), ynewt3 + pt3(2), znewt3 + pt3(3));
 set(hSurface,'FaceColor',color,'EdgeAlpha',0.1);
 
 [xt4, yt4, zt4] = cylinder(R);
-zt4 = (lt(3)+r/2).*zt4;
+zt4 = (l1(3)+r/2).*zt4;
 [xnewt4, ynewt4, znewt4] = cylinderPosition(xt4, yt4, zt4, Rt4);
 hSurface = surf(xnewt4 + pt4(1), ynewt4 + pt4(2), znewt4 + pt4(3));
 set(hSurface, 'FaceColor', color, 'EdgeAlpha', 0.1, 'FaceAlpha', simConfig.alpha);
 
 % Second Finger Links
 [xm2, ym2, zm2] = cylinder(R);
-zm2 = lm(1).*zm2;
+zm2 = l2(1).*zm2;
 [xnewm2, ynewm2, znewm2] = cylinderPosition(xm2, ym2, zm2, Rm2);
 hSurface = surf(xnewm2, ynewm2 + basePosY,znewm2);
 set(hSurface,'FaceColor',color,'EdgeAlpha',0.1);
 
 [xm3, ym3, zm3] = cylinder(R);
-zm3 = lm(2).*zm3;
+zm3 = l2(2).*zm3;
 [xnewm3, ynewm3, znewm3] = cylinderPosition(xm3, ym3, zm3, Rm3);
 hSurface = surf(xnewm3 + pm3(1), ynewm3 + pm3(2), znewm3 + pm3(3));
 set(hSurface, 'FaceColor', color, 'EdgeAlpha', 0.1);
 
 [xm4, ym4, zm4] = cylinder(R);
-zm4 = (lm(3)+r/2).*zm4;
+zm4 = (l2(3)+r/2).*zm4;
 [xnewm4, ynewm4, znewm4] = cylinderPosition(xm4, ym4, zm4, Rm4);
 hSurface = surf(xnewm4 + pm4(1), ynewm4 + pm4(2), znewm4 + pm4(3));
 set(hSurface, 'FaceColor', color, 'EdgeAlpha',0.1, 'FaceAlpha', simConfig.alpha);

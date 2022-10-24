@@ -4,5 +4,6 @@ classdef LinkConfig
         diameter
         links1
         links2
+        links3
     end
 end

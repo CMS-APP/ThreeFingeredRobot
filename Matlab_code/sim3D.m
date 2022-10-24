@@ -2,7 +2,7 @@ close all
 clear all
 clc
 
-global fd Kv gs gt th Ks1 Ks2 p1int0 p2int0 nest
+global fd Kv gs gt th Ks1 Ks2 p1int0 p2int0 p3int0 nest
 
 %% Robot and Object creation
 
@@ -66,24 +66,24 @@ Ks2 = diag([0.2 0.2 0.2]);
 
 %% Simulation
 
-timeConfig = TimeConfig();
-timeConfig.t = 0;
-timeConfig.tEnd = 7;
-timeConfig.barHandle = waitbar(0.0, sprintf('%.3f / %.3f', 0.0, timeConfig.tEnd));
-
-options = odeset('AbsTol',10^(-5) ,'RelTol',10^(-5));
-x0 = [ initialValues.qt0' ; initialValues.qm0' ; ... 
-    initialValues.p0 ;
-    initialValues.n0 ; initialValues.o0 ; initialValues.a0 ; ... 
-    qtdot0 ; qmdot0 ; p0dot0 ; p1int0 ; p2int0 ; nest];
-
-tic
-[t, q] = ode15s(@(t, x) threedee(t , x, simConfig, objConfig, timeConfig), [0 timeConfig.tEnd] , x0 , options);
-toc
-close(timeConfig.barHandle);
+% timeConfig = TimeConfig();
+% timeConfig.t = 0;
+% timeConfig.tEnd = 7;
+% timeConfig.barHandle = waitbar(0.0, sprintf('%.3f / %.3f', 0.0, timeConfig.tEnd));
+% 
+% options = odeset('AbsTol',10^(-5) ,'RelTol',10^(-5));
+% x0 = [ initialValues.qf10' ; initialValues.qf20' ; ... 
+%     initialValues.p0 ;
+%     initialValues.n0 ; initialValues.o0 ; initialValues.a0 ; ... 
+%     qtdot0 ; qmdot0 ; p0dot0 ; p1int0 ; p2int0 ; nest];
+% 
+% tic
+% [t, q] = ode15s(@(t, x) threedee(t , x, simConfig, objConfig, timeConfig), [0 timeConfig.tEnd] , x0 , options);
+% toc
+% close(timeConfig.barHandle);
 
 %% Plotting
 
 initialConfiguration(simConfig, objConfig, linkConfig, initialValues);
-finalConfiguration(simConfig, objConfig, linkConfig);
+% finalConfiguration(simConfig, objConfig, linkConfig);
 % plot3D;

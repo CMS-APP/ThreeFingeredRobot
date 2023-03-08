@@ -1,4 +1,4 @@
-function dJ = four_dof_finger_JacobianDerivative(l,q)
+function dJ = four_dof_finger_JacobianDerivative(l, q)
 
 %% Links length
 l1 = l(1) ;
@@ -42,7 +42,6 @@ dJw3 = [ -c1*dq1 -s1*dq1 0 ]' ;
 dJw4 = [ -c1*dq1 -s1*dq1 0 ]' ;
 
 dJw = [ dJw1 dJw2 dJw3 dJw4 ] ;
-
 
 dJv11 = [ -c1*h0 s1*h1 s1*h3 s1*h5 ]*qdot ;
 dJv21 = [ -s1*h0 -c1*h1 -c1*h3 -c1*h5 ]*qdot ;

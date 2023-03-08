@@ -66,7 +66,7 @@ L4.Jm = 0;
 
 finger = SerialLink([L1 L2 L3 L4]);
 % The rotation matrix for the base of the second finger
-rotationbase = rotz(baseRotation*pi/180);
+rotationbase = rotz(baseRotation * pi/180);
 % Screw displacement, with a rotation about the z axis
 finger.base = [rotationbase basePosition; 0 0 0 1];
 end

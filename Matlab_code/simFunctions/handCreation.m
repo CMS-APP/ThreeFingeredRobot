@@ -1,6 +1,6 @@
 function [linkConfig, initialValues] = handCreation(simConfig, objConfig)
 
-global Io r f1 f2 f3 l1 l2 l3 ptf10 ptf20 ptf30 p1int0 p2int0 p3int0 nest nz1est0 nz2est0 nz3est0 pt1oprev pt2oprev pt3oprev
+global Io r f1 f2 f3 l1 l2 l3 ptf10 ptf20 ptf30 p1int0 p2int0 p3int0 pt1oprev pt2oprev pt3oprev
 global nx10 nx20 nx30 ny10 ny20 ny30 nz10 nz20 nz30 pc10 pc20 pc30 nz1prev nz2prev nz3prev
 
 %% Object and link creation
@@ -11,21 +11,25 @@ r = 0.015; % fingertip radius
 
 % Link dimensions
 linkConfig = LinkConfig();
-linkConfig.w = 0.0355; 
+linkConfig.w = 0.0355;
 linkConfig.diameter = 0.015; % Diameter of link
 
+radius = 0.1;
+x = radius * cosd(60);
+y = radius * sind(60);
+
 % 4-dof First Finger
-[f1, l1, L1, L2, L3, L4] = createFingerLink(linkConfig, -30, [0.00; 0.00; 0.0]);
+[f1, l1, L1, L2, L3, L4] = createFingerLink(linkConfig, -30, [-x; -y; 0.0]);
 linkConfig.links1 = [L1 L2 L3 L4];
 f1.tool = transl(l1(3), 0, 0); 
 
 % 4-dof Second finger
-[f2, l2, L1, L2, L3, L4] = createFingerLink(linkConfig, 30, [0.00; 0.14; 0.0]);
+[f2, l2, L1, L2, L3, L4] = createFingerLink(linkConfig, 30, [-x; y; 0.0]);
 linkConfig.links2 = [L1 L2 L3 L4];
 f2.tool = transl(l2(3), 0, 0); 
 
 % 4-dof Third finger
-[f3, l3, L1, L2, L3, L4] = createFingerLink(linkConfig, -90, [0.11; 0.07; 0.0]);
+[f3, l3, L1, L2, L3, L4] = createFingerLink(linkConfig, -90, [x; 0.00; 0.0]);
 linkConfig.links3 = [L1 L2 L3 L4];
 f3.tool = transl(l3(3), 0, 0); 
 
@@ -41,25 +45,25 @@ if simConfig.obj == 1
     % Cube
     
     % Position of the fingers on the object
-    poc1 = [ 0; -objConfig.length / 2 ; 0];
-    poc2 = [ 0; objConfig.length / 2 ; 0];
+    poc1 = [ -objConfig.length / 3; -objConfig.length / 2 ; 0];
+    poc2 = [ -objConfig.length / 3; objConfig.length / 2 ; 0];
     poc3 = [ objConfig.length / 2; 0; 0];
     
     % The normal vectors from the contact point on the sensor 
     % First finger
     nx1o = [1 ; 0 ; 0];
     ny1o = [0 ; 1 ; 0];
-    nz1o = [0 ; 0 ; -1];
+    nz1o = [0 ; 0 ; 1];
     
     % Second finger
     nx2o = [-1 ; 0 ; 0];
-    ny2o = [0 ; 1 ; 0];
-    nz2o = [0 ; 0 ; -1];
+    ny2o = [0 ; -1 ; 0];
+    nz2o = [0 ; 0 ; 1];
     
     % Third finger
     nx3o = [-1 ; 0 ; 0];
     ny3o = [0 ; 1 ; 0];
-    nz3o = [0 ; 0 ; -1];
+    nz3o = [0 ; 0 ; 1];
     
 elseif simConfig.obj == 2
     % Trapezium
@@ -127,27 +131,22 @@ initialValues.o0    = [ -1 ; 0 ; 0];
 initialValues.a0    = [ 0 ; 0 ; 1];
 R0 = [initialValues.n0 initialValues.o0 initialValues.a0];
 
-%% Here!
-
 % The normal vectors with respect to the reference frame
 if (simConfig.obj == 1) || (simConfig.obj == 2) || (simConfig.obj == 3)
     % Finger 1
     nx10 = R0*nx1o;
     ny10 = R0*ny1o;
     nz10 = R0*nz1o;
-    Rc1 = [nx10 ny10 nz10];
     
     % Finger 2
     nx20 = R0*nx2o;
     ny20 = R0*ny2o;
     nz20 = R0*nz2o;
-    Rc2 = [nx20 ny20 nz20];
     
     % Finger 3
     nx30 = R0*nx3o;
     ny30 = R0*ny3o;
     nz30 = R0*nz3o;
-    Rc3 = [nx30 ny30 nz30];
     
 elseif simConfig.obj == 4
     poc1 = R0*poc1o;
@@ -162,23 +161,6 @@ elseif simConfig.obj == 4
     ny20 = Rc2(:,2);
     nz20 = Rc2(:,3);
 end
-
-% Estimate values for something 
-Rc1est = Rc1 * rotz(0 * pi / 180) * roty(0 * pi / 180);
-Rc2est = Rc2 * rotz(0 * pi / 180) * roty(0 * pi / 180);
-Rc3est = Rc3 * rotz(0 * pi / 180) * roty(45 * pi / 180);
-
-% Estimate values for something else
-nest = [
-    Rc1est(:,2);
-    Rc1est(:,1);
-    Rc1est(:,3);
-    Rc2est(:,2);
-    Rc2est(:,1);
-    Rc2est(:,3)
-    Rc3est(:,2);
-    Rc3est(:,1);
-    Rc3est(:,3)];
 
 % fkine - inverse kinematics using iterative numerical method
 % forward kinematics 
@@ -228,14 +210,10 @@ ptf30 = T_final_f3(1:3,4);
 
 %% Tip positions
 
-% ptt finger tip position
+% ptf finger tip position
 p1int0 = [initialValues.a0' * ptf10 ; -nx10' * ptf10];
 p2int0 = [initialValues.a0' * ptf20 ; -nx20' * ptf20];
 p3int0 = [initialValues.a0' * ptf30 ; -nx30' * ptf30];
-
-nz1est0 = nest(7:9);
-nz2est0 = nest(16:18);
-nz3est0 = nest(25:27);
 
 % disp('First finger manipulability =')
 % disp(f1.maniplty(initialValues.qf10, 'yoshikawa','T'))
@@ -275,10 +253,10 @@ nz3prev = nz30;
 % disp(R0)
 % % Joints
 disp('qf1(0) =')
-disp(initialValues.qf10*180/pi)
+disp(initialValues.qf10); %*180/pi)
 disp('qf2(0) =')
-disp(initialValues.qf20*180/pi)
+disp(initialValues.qf20); %*180/pi)
 disp('qf3(0) =')
-disp(initialValues.qf30*180/pi)
+disp(initialValues.qf30); %*180/pi)
 
 end

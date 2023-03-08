@@ -2,7 +2,9 @@ close all
 clear all
 clc
 
-global fd Kv gs gt th Ks1 Ks2 p1int0 p2int0 p3int0 nest
+global fd Kv gs gt th p1int0 p2int0 p3int0 nest
+global Dpt1 Dpt2 Dpt3
+global angz1s angz2s angz3s angy1s angy2s angy3s
 
 %% Robot and Object creation
 
@@ -32,8 +34,9 @@ objConfig.sphereRadius = 0.024; % Radius of sphere if used
 %------------------------------%
 
 % Velocities of the system - all zero
-qtdot0 = [ 0 ; 0 ; 0 ; 0 ];
-qmdot0 = [ 0 ; 0 ; 0 ; 0 ];
+qf1dot0 = [ 0 ; 0 ; 0 ; 0 ];
+qf2dot0 = [ 0 ; 0 ; 0 ; 0 ];
+qf3dot0 = [ 0 ; 0 ; 0 ; 0 ];
 p0dot0 = [ 0 ; 0 ; 0 ; 0 ; 0 ; 0 ];
 
 %% Control gains
@@ -44,46 +47,87 @@ th = 0 * pi/180;
 
 % gs - x direction for reverence frame
 gs = 0;
-% gs - y direction for reverence frame
+% gt - y direction for reverence frame
 gt = 0;
 
 % Desired grasping force (N)
-fd  = 4;
+fd  = 6.0;
 
-% Damping gain velocities - makes the system smoother
-% 4 Joints, so 4 damping values for each finger
-Kv1 = diag([7 7 7 7]*10^(-2)); % diag([0.9 0.8 0.7 0.7 0.7]);
-Kv2 = diag([7 7 7 7]*10^(-2)); % diag([0.8 0.8 0.8 0.8]);
-
-% Combined matrix
-Kv  = [    Kv1     zeros(4,4)  zeros(4,6);          % 
-       zeros(4,4)      Kv2     zeros(4,6);          % 14x14 - 18x18 for 3 fingered - remember to add another row and column for each finger
-       zeros(6,4)  zeros(6,4)  zeros(6,6)];         %
-
-% Spinging damping - ignore with 3 fingers
-Ks1 = diag([0.2 0.2 0.2]);
-Ks2 = diag([0.2 0.2 0.2]);
+dpt = [];
+dwt = [];
 
 %% Simulation
 
-% timeConfig = TimeConfig();
-% timeConfig.t = 0;
-% timeConfig.tEnd = 7;
-% timeConfig.barHandle = waitbar(0.0, sprintf('%.3f / %.3f', 0.0, timeConfig.tEnd));
-% 
-% options = odeset('AbsTol',10^(-5) ,'RelTol',10^(-5));
-% x0 = [ initialValues.qf10' ; initialValues.qf20' ; ... 
-%     initialValues.p0 ;
-%     initialValues.n0 ; initialValues.o0 ; initialValues.a0 ; ... 
-%     qtdot0 ; qmdot0 ; p0dot0 ; p1int0 ; p2int0 ; nest];
-% 
-% tic
-% [t, q] = ode15s(@(t, x) threedee(t , x, simConfig, objConfig, timeConfig), [0 timeConfig.tEnd] , x0 , options);
-% toc
-% close(timeConfig.barHandle);
+initialConfiguration(simConfig, objConfig, linkConfig, initialValues);
+
+timeConfig = TimeConfig();
+timeConfig.t = 0;
+timeConfig.tEnd = 1.0;
+timeConfig.barHandle = waitbar(0.0, sprintf('%.3f / %.3f', 0.0, timeConfig.tEnd));
+
+options = odeset('AbsTol',10^(-5) ,'RelTol',10^(-5), 'OutputFcn', 'threedee_out');
+x0 = [ initialValues.qf10'; initialValues.qf20'; initialValues.qf30'; ... 
+    initialValues.p0 ; initialValues.n0 ; initialValues.o0 ; initialValues.a0 ; ... 
+    qf1dot0; qf2dot0; qf3dot0; p0dot0; p1int0 ; p2int0; p3int0];
+
+tic
+[t, q] = ode15s(@(t, x) threedee(t , x, simConfig, objConfig, timeConfig), [0 timeConfig.tEnd] , x0 , options);
+toc
+close(timeConfig.barHandle);
 
 %% Plotting
 
-initialConfiguration(simConfig, objConfig, linkConfig, initialValues);
-% finalConfiguration(simConfig, objConfig, linkConfig);
+finalConfiguration(simConfig, objConfig, linkConfig);
 % plot3D;
+
+% size(dpt)
+
+t = 1: size(Dpt1(:,1));
+f = figure();
+set(gcf,'position',[0,0,1500,500])
+
+% Finger 1
+subplot(1,3,1)
+hold on
+plot(t, Dpt1(:, 1), 'b');
+plot(t, Dpt1(:, 2), 'r');
+plot(t, Dpt1(:, 3), 'g');
+hold off
+title('Finger 1 tip velocities')
+
+% Finger 2
+subplot(1,3,2)
+hold on
+plot(t, Dpt2(:, 1), 'b');
+plot(t, Dpt2(:, 2), 'r');
+plot(t, Dpt2(:, 3), 'g');
+
+title('Finger 2 tip velocities')
+hold off
+% Finger 3
+subplot(1,3,3)
+hold on
+plot(t, Dpt3(:, 1), 'b');
+plot(t, Dpt3(:, 2), 'r');
+plot(t, Dpt3(:, 3), 'g');
+hold off
+title('Finger 3 tip velocities')
+
+% figure();
+% % Angle x
+% hold on
+% plot(t, angz1s, 'b');
+% plot(t, angz2s, 'r');
+% plot(t, angz3s, 'g');
+% title('Fingers x angle')
+% hold off
+% 
+% % Angle y
+% figure();
+% hold on
+% plot(t, angy1s, 'b');
+% plot(t, angy2s, 'r');
+% plot(t, angy3s, 'g');
+
+% title('Fingers y angle')
+hold off

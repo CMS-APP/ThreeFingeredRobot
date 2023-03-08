@@ -3,7 +3,10 @@ function initialConfiguration(simConfig, objConfig, linkConfig, initialValues)
 global r ptf10 ptf20 ptf30 l1 l2 l3 pc10 pc20 pc30
 global f1 f2 f3 nx10 nx20 nx30 ny10 ny20 ny30 nz10 nz20 nz30
 
-figure('Name','Initial Configuration','NumberTitle','off')
+f = figure('Name','Initial And Final Configuration','NumberTitle','off');
+set(gcf,'position',[0,0,1500,500])
+
+subplot(1,2,1)
 
 % Skin color
 color = [185 124 109]./255;
@@ -28,7 +31,7 @@ createObject(simConfig, objConfig, n, o, a, initialValues.p0)
 R = 0.015/2;
 tipf1 = ptf10 + Rtf1*[r - R ; 0 ; 0];
 [xs,ys,zs] = sphere(50);
-hSurface = surf(R.*xs, R.*ys, R.*zs);
+hSurface = surf(R.*xs + pf12(1), R.*ys + pf12(2), R.*zs + pf12(3));
 set(hSurface,'FaceColor',color,'EdgeAlpha',0.1);
 createJoints(R, xs, ys, zs, pf12, pf13, pf14, tipf1, color, simConfig)
 
@@ -36,7 +39,7 @@ createJoints(R, xs, ys, zs, pf12, pf13, pf14, tipf1, color, simConfig)
 R = 0.015/2;
 tipf2 = ptf20 + Rtf2 * [r - R ; 0 ; 0];
 [xs,ys,zs] = sphere(50);
-hSurface = surf(R.*xs, R.*ys + pf12(2), R.*zs);
+hSurface = surf(R.*xs + pf22(1), R.*ys + pf22(2), R.*zs + pf22(3));
 set(hSurface,'FaceColor',color,'EdgeAlpha',0.1);
 createJoints(R, xs, ys, zs, pf22, pf23, pf24, tipf2, color, simConfig)
 
@@ -54,7 +57,7 @@ createJoints(R, xs, ys, zs, pf32, pf33, pf34, tipf3, color, simConfig)
 [xf12, yf12, zf12] = cylinder(R);
 zf12 = l1(1).*zf12;
 [xnewt2, ynewt2, znewt2] = cylinderPosition(xf12, yf12, zf12, Rf12);
-hSurface = surf(xnewt2, ynewt2, znewt2);
+hSurface = surf(xnewt2 + pf12(1), ynewt2 + pf12(2), znewt2 + pf12(3));
 set(hSurface,'FaceColor', color, 'EdgeAlpha', 0.1);
 
 [xf13, yf13, zf13] = cylinder(R);
@@ -73,7 +76,7 @@ set(hSurface, 'FaceColor', color, 'EdgeAlpha', 0.1, 'FaceAlpha', simConfig.alpha
 [xf22, yf22, zf22] = cylinder(R);
 zf22 = l2(1).*zf22;
 [xnewm2, ynewm2, znewm2] = cylinderPosition(xf22, yf22, zf22, Rf22);
-hSurface = surf(xnewm2, ynewm2 + pf22(2),znewm2);
+hSurface = surf(xnewm2 + pf22(1), ynewm2 + pf22(2), znewm2 + pf22(3));
 set(hSurface,'FaceColor',color,'EdgeAlpha',0.1);
 
 [xf23, yf23, zf23] = cylinder(R);
@@ -138,8 +141,35 @@ if simConfig.test == 1
     quiver3(pc30(1),pc30(2),pc30(3),0.02*nx30(1),0.02*nx30(2),0.02*nx30(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
     quiver3(pc30(1),pc30(2),pc30(3),0.02*ny30(1),0.02*ny30(2),0.02*ny30(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
     quiver3(pc30(1),pc30(2),pc30(3),0.02*nz30(1),0.02*nz30(2),0.02*nz30(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
+
+%     plot3(0, 0, 0, 'bo','LineWidth', 2)
+% 
+%     quiver3(pf12(1),pf12(2),pf12(3), 0.02, 0, 0 , 0,'k','LineWidth', 2, 'MaxHeadSize',1)
+%     quiver3(pf12(1),pf12(2),pf12(3), 0.02 * sind(30), 0.02 * cosd(30), 0, 'b','LineWidth', 2, 'MaxHeadSize',1)
+%     
+%     quiver3(pf22(1),pf22(2),pf22(3), 0.02, 0, 0 , 0,'k','LineWidth', 2, 'MaxHeadSize',1)
+%     quiver3(pf22(1),pf22(2),pf22(3), 0.02 * sind(30), -0.02 * cosd(30), 0,'b','LineWidth', 2, 'MaxHeadSize',1)
+%     
+%     quiver3(pf32(1),pf32(2),pf32(3), 0.02, 0, 0 , 0,'k','LineWidth', 2, 'MaxHeadSize',1)
+%     quiver3(pf32(1),pf32(2),pf32(3), -0.02, 0, 0 , 0,'b','LineWidth', 2, 'MaxHeadSize',1)
+%     
+%     plot3DAngleSemiCircle(pf12, 0.01, 0, 60)
+%     plot3DAngleSemiCircle(pf22, 0.01, 0, -60)
+%     plot3DAngleSemiCircle(pf32, 0.01, 0, 180)
+%     
+%     quiver3(pc10(1),pc10(2),pc10(3),0.02*ny10(1),0.02*ny10(2),0.02*ny10(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
+%     quiver3(pc10(1),pc10(2),pc10(3),0.02*nz10(1),0.02*nz10(2),0.02*nz10(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
+%     
+%     quiver3(pc20(1),pc20(2),pc20(3),0.02*nx20(1),0.02*nx20(2),0.02*nx20(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
+%     quiver3(pc20(1),pc20(2),pc20(3),0.02*ny20(1),0.02*ny20(2),0.02*ny20(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
+%     quiver3(pc20(1),pc20(2),pc20(3),0.02*nz20(1),0.02*nz20(2),0.02*nz20(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
+%     
+%     quiver3(pc30(1),pc30(2),pc30(3),0.02*nx30(1),0.02*nx30(2),0.02*nx30(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
+%     quiver3(pc30(1),pc30(2),pc30(3),0.02*ny30(1),0.02*ny30(2),0.02*ny30(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
+%     quiver3(pc30(1),pc30(2),pc30(3),0.02*nz30(1),0.02*nz30(2),0.02*nz30(3),0,'k','LineWidth', 2, 'MaxHeadSize',1)
+
     
-    % t1t2 & c1c2
+%     t1t2 & c1c2
     xtt = [ ptf10(1); ptf20(1) ] ;
     ytt = [ ptf10(2); ptf20(2) ] ;
     ztt = [ ptf10(3); ptf20(3) ] ;
@@ -149,9 +179,51 @@ if simConfig.test == 1
     
     plot3(xtt,ytt,ztt,'b','LineWidth', 2)
     plot3(xcc,ycc,zcc,'g','LineWidth', 2)
+    
+    pt1 = Rtf1;
+    pt2 = Rtf2;
+    pt3 = Rtf3;
+    
+    plotLineBetweenPoints(tipf1, tipf2)
+    plotLineBetweenPoints(tipf2, tipf3)
+    plotLineBetweenPoints(tipf3, tipf1)
+    
+    middlePos = (tipf1 + tipf2 + tipf3) / 3;
+    plot3(middlePos(1), middlePos(2), middlePos(3), 'bo','LineWidth', 2);
+    
+    plotLineBetweenPoints(tipf1, middlePos)
+    plotLineBetweenPoints(tipf2, middlePos)
+    plotLineBetweenPoints(tipf3, middlePos)
+    
+    plot3(tipf1(1), tipf1(2), tipf1(3), 'bo','LineWidth', 2);
+    plot3(tipf2(1), tipf2(2), tipf2(3), 'bo','LineWidth', 2);
+    plot3(tipf3(1), tipf3(2), tipf3(3), 'bo','LineWidth', 2);
+    
 end
+
 box on
 axis equal
 hold off
 
+end
+
+function plotLineBetweenPoints(point1, point2)
+    v1=[point1(1), point1(2), point1(3)];
+    v2=[point2(1), point2(2), point2(3)];
+    v=[v2; v1];
+    plot3(v(:,1), v(:,2), v(:,3), 'r', 'LineWidth', 2)
+end
+
+function plot3DAngleSemiCircle(center, radius, angleStart, angleEnd)
+    xCenter = center(1);
+    yCenter = center(2); 
+    % Define the angle theta as going from 30 to 150 degrees in 100 steps.
+    theta = linspace(angleStart, angleEnd, 100);
+    % Define x and y using "Degrees" version of sin and cos.
+    x = radius * cosd(theta) + xCenter; 
+    y = radius * sind(theta) + yCenter; 
+    z = zeros(size(x));
+   
+    % Now plot the points.
+    plot3(x, y, z, 'r-', 'LineWidth', 2); 
 end

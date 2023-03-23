@@ -1,7 +1,5 @@
 function J = four_dof_finger_Jacobian(l,q)
 
-
-
 %% Links length
 l1 = l(1) ;
 l2 = l(2) ;

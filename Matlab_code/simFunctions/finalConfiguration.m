@@ -119,12 +119,12 @@ hSurface = surf(r.*xnewf1 + Pt1(1), r.*ynewf1 + Pt1(2), r.*znewf1 + Pt1(3));  %#
 set(hSurface,'FaceColor',colortip,'EdgeAlpha',0,'FaceAlpha', simConfig.alpha);
 
 % Second Finger Fingertip
-[xnewf2, ynewf2, znewf2] = fingertipPosition(Rtf2, pi/2);
+[xnewf2, ynewf2, znewf2] = fingertipPosition(Rtf2, -pi/2);
 hSurface = surf(r.*xnewf2 + Pt2(1), r.*ynewf2 + Pt2(2), r.*znewf2 + Pt2(3));  %# Plot the surface
 set(hSurface,'FaceColor',colortip,'EdgeAlpha',0,'FaceAlpha', simConfig.alpha);
 
 % Third Finger Fingertip
-[xnewf3, ynewf3, znewf3] = fingertipPosition(Rtf3, pi/2);
+[xnewf3, ynewf3, znewf3] = fingertipPosition(Rtf3, -pi/2);
 hSurface = surf(r.*xnewf3 + Pt3(1), r.*ynewf3 + Pt3(2), r.*znewf3 + Pt3(3));  %# Plot the surface
 set(hSurface,'FaceColor',colortip,'EdgeAlpha',0,'FaceAlpha', simConfig.alpha);
 

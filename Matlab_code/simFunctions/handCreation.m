@@ -24,12 +24,12 @@ linkConfig.links1 = [L1 L2 L3 L4];
 f1.tool = transl(l1(3), 0, 0); 
 
 % 4-dof Second finger
-[f2, l2, L1, L2, L3, L4] = createFingerLink(linkConfig, 30, [-x; y; 0.0]);
+[f2, l2, L1, L2, L3, L4] = createFingerLink(linkConfig, -150, [-x; y; 0.0]);
 linkConfig.links2 = [L1 L2 L3 L4];
 f2.tool = transl(l2(3), 0, 0); 
 
 % 4-dof Third finger
-[f3, l3, L1, L2, L3, L4] = createFingerLink(linkConfig, -90, [x; 0.00; 0.0]);
+[f3, l3, L1, L2, L3, L4] = createFingerLink(linkConfig, 90, [radius; 0.00; 0.0]);
 linkConfig.links3 = [L1 L2 L3 L4];
 f3.tool = transl(l3(3), 0, 0); 
 
@@ -37,9 +37,9 @@ f3.tool = transl(l3(3), 0, 0);
 
 initialValues = InitialValues();
 % Initial angles for the first and second fingers
-q0f1 = [-90 0 -30 0]*(pi/180); 
-q0f2 = [-90 0 30 0]*(pi/180);
-q0f3 = [-90 0 30 0]*(pi/180);
+q0f1 = [-90 0 -20 -10]*(pi/180); 
+q0f2 = [-90 0 -25 -25]*(pi/180);
+q0f3 = [-90 0 -20 0]*(pi/180);
 
 if simConfig.obj == 1
     % Cube
@@ -61,8 +61,8 @@ if simConfig.obj == 1
     nz2o = [0 ; 0 ; 1];
     
     % Third finger
-    nx3o = [-1 ; 0 ; 0];
-    ny3o = [0 ; 1 ; 0];
+    nx3o = [0 ; 1 ; 0];
+    ny3o = [-1 ; 0 ; 0];
     nz3o = [0 ; 0 ; 1];
     
 elseif simConfig.obj == 2
@@ -168,8 +168,8 @@ end
 % inverse kinematics
 
 %% Second finger
-T_init_f3 = f2.fkine(q0f2');
-qf20 = f2.ikunc(T_init_f3);
+T_init_f2 = f2.fkine(q0f2');
+qf20 = f2.ikunc(T_init_f2);
 initialValues.qf20 = qf20;
 T_final_f2 = f2.fkine(initialValues.qf20');
 
@@ -196,7 +196,7 @@ ptf10 = T_final_f1(1:3,4);                      % check initial middle fingertip
 %% Third finger
 
 pc30 = initialValues.p0 + poc3;
-ptf30 = pc30 - r*ny30;
+ptf30 = pc30 - r*nx30;
 
 T_init_f3 = f3.fkine(q0f3');
 R06 = T_init_f3(1:3, 1:3);

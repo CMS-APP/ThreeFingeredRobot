@@ -5,6 +5,8 @@ clc
 global fd Kv gs gt th p1int0 p2int0 p3int0 nest
 global Dpt1 Dpt2 Dpt3
 global angz1s angz2s angz3s angy1s angy2s angy3s
+global pmtm1
+global tm1
 
 %% Robot and Object creation
 
@@ -53,6 +55,9 @@ gt = 0;
 % Desired grasping force (N)
 fd  = 6.0;
 
+pmtm1 = [];
+tm1 = 0;
+
 dpt = [];
 dwt = [];
 
@@ -62,7 +67,7 @@ initialConfiguration(simConfig, objConfig, linkConfig, initialValues);
 
 timeConfig = TimeConfig();
 timeConfig.t = 0;
-timeConfig.tEnd = 1.0;
+timeConfig.tEnd = 3.5;
 timeConfig.barHandle = waitbar(0.0, sprintf('%.3f / %.3f', 0.0, timeConfig.tEnd));
 
 options = odeset('AbsTol',10^(-5) ,'RelTol',10^(-5), 'OutputFcn', 'threedee_out');
@@ -71,7 +76,7 @@ x0 = [ initialValues.qf10'; initialValues.qf20'; initialValues.qf30'; ...
     qf1dot0; qf2dot0; qf3dot0; p0dot0; p1int0 ; p2int0; p3int0];
 
 tic
-[t, q] = ode15s(@(t, x) threedee(t , x, simConfig, objConfig, timeConfig), [0 timeConfig.tEnd] , x0 , options);
+[t, q] = ode15s(@(t, x) threedee(t , x, initialValues, simConfig, objConfig, timeConfig), [0 timeConfig.tEnd] , x0 , options);
 toc
 close(timeConfig.barHandle);
 
@@ -84,7 +89,7 @@ finalConfiguration(simConfig, objConfig, linkConfig);
 
 t = 1: size(Dpt1(:,1));
 f = figure();
-set(gcf,'position',[0,0,1500,500])
+set(gcf,'position',[0, 0, 1500, 500])
 
 % Finger 1
 subplot(1,3,1)

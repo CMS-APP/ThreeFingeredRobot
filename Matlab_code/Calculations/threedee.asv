@@ -350,13 +350,50 @@ Adot = [dA11        zeros(2,4)	zeros(2,4)  dA14;          % 6x18
 % The rolling distance of each of the finger
 psi1dot = nz1' * dwt1;
 psi2dot = nz2' * dwt2;
-psi3dot = -nz3' * dwt3;
+psi3dot = nz3' * dwt3;
 
 phi1dot = ny1' * dwt1;
-phi2dot = -ny2' * dwt2;
+phi2dot = ny2' * dwt2;
 phi3dot = ny3' * dwt3;
 
-KvT = 0.01;
+ptm = (pt1 + pt2 + pt3) / 3;
+vtm1 = ptm - pt1;
+vtm2 = ptm - pt2;
+vtm3 = ptm - pt3;
+
+angz1 = asin(dot([pt1(1); pt1(3)], [vtm1(1); vtm1(3)]) / (norm([pt1(1); pt1(3)]) * norm([vtm1(1); vtm1(3)])));
+angy1 = asin(dot([pt1(1); pt1(2)], [vtm1(1); vtm1(2)]) / (norm([pt1(1); pt1(2)]) * norm([vtm1(1); vtm1(2)])));
+
+angz2 = asin(dot([pt2(1); pt2(3)], [vtm2(1); vtm2(3)]) / (norm([pt2(1); pt2(3)]) * norm([vtm2(1); vtm2(3)])));
+angy2 = asin(dot([pt2(1); pt2(2)], [vtm2(1); vtm2(2)]) / (norm([pt2(1); pt2(2)]) * norm([vtm2(1); vtm2(2)])));
+
+angz3 = asin(dot([pt3(1); pt3(3)], [vtm3(1); vtm3(3)]) / (norm([pt3(1); pt3(3)]) * norm([vtm3(1); vtm3(3)])));
+angy3 = asin(dot([pt3(1); pt3(2)], [vtm3(1); vtm3(2)]) / (norm([pt3(1); pt3(2)]) * norm([vtm3(1); vtm3(2)])));
+
+angz1s = [angz1; angz1s];
+angz2s = [angz2; angz2s];
+angz3s = [angz3; angz3s];
+angy1s = [angy1; angy1s];
+angy2s = [angy2; angy2s];
+angy3s = [angy3; angy3s];
+
+Nar1 = -r * Jw1' * (nz1 * sin(angz1 - gt * pi/180) + ny1 * sin(angy1 - gs * pi/180));
+Nar2 = -r * Jw2' * (nz2 * sin(angz2 - gt * pi/180) + ny2 * sin(angy2 - gs * pi/180));
+Nar3 = -r * Jw3' * (nz3 * sin(angz3 - gt * pi/180) + ny3 * sin(angy3 - gs * pi/180));
+
+% Nar = [r*fd*Jw1'*[nz1 ny1]*[sin(phi1 - phi2 - phi3 - gt*pi/180); sin(psi1 - psi2 - psi3  - gs*pi/180)];
+%        r*fd*Jw2'*[nz2 ny2]*[sin(phi1 - phi2 - phi3 - gt*pi/180); sin(psi1 - psi2 - psi3 - gs*pi/180)];
+%        r*fd*Jw3'*[nz3 ny3]*[sin(phi1 - phi2 - phi3 - gt*pi/180); sin(psi1 - psi2 - psi3 - gs*pi/180)]
+%        0;
+%        0;
+%        0;
+%        0;
+%        0;
+%        0];
+
+% u = [u1; u2; u3; zeros(6, 1)];
+
+KvT = 5;
 KvN = diag([KvT KvT KvT KvT]);
 Kv  = [KvN          zeros(4,4)  zeros(4,4)  zeros(4,6);       
        zeros(4,4)   KvN         zeros(4,4)  zeros(4,6);
@@ -372,20 +409,44 @@ ptm = (pt1 + pt2 + pt3) / 3;
 tFactor = 1;
 Jm = - (Jv1 + Jv2 + Jv3) / 3;
 
-ptm(3) = initialValues.p0(3);
+% ptm(3) = initialValues.p0(3);
 
 % Translational controller
 u1T = tFactor * fd * (Jv1' - Jm') * ((ptm - pt1) / norm(ptm - pt1));
 u2T = tFactor * fd * (Jv2' - Jm') * ((ptm - pt2) / norm(ptm - pt2));
-u3T = 0.9 * tFactor * fd * (Jv3' - Jm') * ((ptm - pt3) / norm(ptm - pt3));
+u3T = 0.8 * tFactor * fd * (Jv3' - Jm') * ((ptm - pt3) / norm(ptm - pt3));
+
+% Rotational controller
+f1Base = f1.base(1:3, 4);
+f2Base = f2.base(1:3, 4);
+f3Base = f3.base(1:3, 4);
+
+theta1 = calculateVerticalAngle(pc1, pc2, pc3);
+theta2 = calculateVerticalAngle(pc2, pc3, pc1);
+theta3 = calculateVerticalAngle(pc3, pc1, pc2);
+
+zeta1 = calcHorizontalAngle(f1Base, ptm, pc1);
+zeta2 = calcHorizontalAngle(f2Base, ptm, pc2);
+zeta3 = calcHorizontalAngle(f3Base, ptm, pc3);
 
 rFactor = 1;
+
+thetas = sum([abs(theta1), abs(theta2), abs(theta3)]);
+zetas = sum([abs(zeta1), abs(zeta2), abs(zeta3)]);
+[thetas, zetas, sum(thetas + zetas)]
+
+% u1R = r * fd * Jw1' * ()
+
+u1R = rFactor * r * fd * Jw1' * (nz1 * sin(theta1) + ny1 * sin(zeta1));
+u2R = rFactor * r * fd * Jw2' * (-nz2 * sin(theta2) + ny2 * sin(zeta2));
+u3R = rFactor * r * fd * Jw3' * (nz3 * sin(theta3) + ny3 * sin(zeta3));
+
 avPsi = (psi1 + psi2 + psi3) / 3;
 avPhi = (phi1 + phi2 + phi3) / 3;
 
 u1R = rFactor * r * fd * Jw1' * (nz1 * sin(avPsi) + ny1 * sin(avPhi));
-u2R = rFactor * r * fd * Jw2' * (nz2 * sin(avPsi) - ny2 * sin(avPhi));
-u3R = 0.9 * rFactor * r * fd * Jw3' * (-nz3 * sin(avPsi) + ny3 * sin(avPhi));
+u2R = rFactor * r * fd * Jw2' * (nz2 * sin(avPsi) + ny2 * sin(avPhi));
+u3R = rFactor * r * fd * Jw3' * (nz3 * sin(avPsi) + ny3 * sin(avPhi));
 
 % Adding together translational and rotational controllers
 u(1:4) = u(1:4) + u1T + u1R;
